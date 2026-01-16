@@ -19,10 +19,11 @@ export default function Navbar() {
     setOpen(false)
   }
 
-  function handleLogin() {
-    alert("Login coming soon 🚧")
-    setOpen(false)
-  }
+function handleLogin() {
+  window.location.href = "/admin/login"
+  setOpen(false)
+}
+
 
   useEffect(() => {
     const sections = menu.map((item) =>

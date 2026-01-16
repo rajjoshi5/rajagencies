@@ -1,4 +1,5 @@
-import { lazy, Suspense } from "react"
+import { lazy, Suspense, useEffect } from "react"
+import { supabase } from "./lib/supabase"
 
 const Hero = lazy(() => import("./components/Hero"))
 const Overview = lazy(() => import("./components/Overview"))
@@ -10,6 +11,18 @@ const Navbar = lazy(() => import("./components/Navbar"))
 const WhatsAppFloat = lazy(() => import("./components/WhatsAppFloat"))
 
 export default function App() {
+
+  // ✅ Test Supabase connection on app load
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data, error }) => {
+      if (error) {
+        console.error("❌ Supabase error:", error.message)
+      } else {
+        console.log("✅ Supabase connected successfully:", data)
+      }
+    })
+  }, [])
+
   return (
     <Suspense fallback={<div className="h-screen" />}>
       <Navbar />
