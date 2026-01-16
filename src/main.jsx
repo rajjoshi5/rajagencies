@@ -4,10 +4,11 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 
 import App from "./App"
 import Login from "./pages/admin/Login"
-import Dashboard from "./pages/admin/Dashboard"
+import AdminLayout from "./pages/admin/AdminLayout"
+import AdminDashboard from "./pages/admin/AdminDashboard"
+import Manufacturers from "./pages/admin/Manufacturers"
 
 import { supabase } from "./lib/supabase"
-
 import "./index.css"
 
 /* -----------------------------
@@ -55,15 +56,24 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         {/* Admin Login */}
         <Route path="/admin/login" element={<Login />} />
 
-        {/* Protected Admin Dashboard */}
+        {/* Protected Admin Area */}
         <Route
           path="/admin"
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <AdminLayout />
             </ProtectedRoute>
           }
-        />
+        >
+          {/* Dashboard */}
+          <Route index element={<AdminDashboard />} />
+
+          {/* Modules */}
+          <Route path="manufacturers" element={<Manufacturers />} />
+
+          {/* Future */}
+          {/* <Route path="retailers" element={<Retailers />} /> */}
+        </Route>
 
       </Routes>
     </BrowserRouter>
