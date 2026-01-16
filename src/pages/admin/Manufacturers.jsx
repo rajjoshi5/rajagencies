@@ -232,77 +232,70 @@ export default function Manufacturers() {
 
           {/* Table */}
           <div className="mt-6 bg-white rounded-xl shadow overflow-x-auto">
-            {loading ? (
-              <p className="p-6 text-slate-500">Loading...</p>
-            ) : (
-              <table className="w-full border min-w-[500px]">
-                <thead className="bg-slate-100 text-xs md:text-sm">
-                  <tr>
-                    {["Name", "City", "State", "Phone", "Actions"].map((h) => (
-                      <th key={h} className="p-2 md:p-3 border">
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
+  {loading ? (
+    <p className="p-6 text-slate-500">Loading...</p>
+  ) : (
+    <table className="w-full border">
+      <thead className="bg-slate-100 text-xs md:text-sm">
+        <tr>
+          <th className="p-2 md:p-3 border">Name</th>
+          <th className="p-2 md:p-3 border">City</th>
 
-                <tbody className="text-xs md:text-sm">
-                  {paginatedManufacturers.map((mfr) => (
-                    <tr key={mfr.id} className="hover:bg-slate-50">
-                      {["name", "city", "state", "phone"].map((field) => (
-                        <td key={field} className="p-2 md:p-3 border">
-                          {editingId === mfr.id ? (
-                            <input
-                              name={field}
-                              value={editForm[field]}
-                              onChange={handleEditChange}
-                              className="w-full border rounded px-1 py-1"
-                            />
-                          ) : (
-                            mfr[field] || "-"
-                          )}
-                        </td>
-                      ))}
+          {/* Hide on mobile */}
+          <th className="hidden md:table-cell p-2 md:p-3 border">
+            State
+          </th>
+          <th className="hidden md:table-cell p-2 md:p-3 border">
+            Phone
+          </th>
+          <th className="hidden md:table-cell p-2 md:p-3 border text-center">
+            Actions
+          </th>
+        </tr>
+      </thead>
 
-                      <td className="p-2 md:p-3 border text-center whitespace-nowrap">
-                        {editingId === mfr.id ? (
-                          <>
-                            <button
-                              onClick={() => saveEdit(mfr.id)}
-                              className="text-green-700 mr-2"
-                            >
-                              Save
-                            </button>
-                            <button
-                              onClick={() => setEditingId(null)}
-                              className="text-slate-500"
-                            >
-                              Cancel
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <button
-                              onClick={() => startEdit(mfr)}
-                              className="text-blue-700 mr-2"
-                            >
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => setDeleteTarget(mfr)}
-                              className="text-red-600"
-                            >
-                              Delete
-                            </button>
-                          </>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
+      <tbody className="text-xs md:text-sm">
+        {paginatedManufacturers.map((mfr) => (
+          <tr key={mfr.id} className="hover:bg-slate-50">
+
+            <td className="p-2 md:p-3 border font-medium">
+              {mfr.name}
+            </td>
+
+            <td className="p-2 md:p-3 border">
+              {mfr.city || "-"}
+            </td>
+
+            {/* Desktop only */}
+            <td className="hidden md:table-cell p-2 md:p-3 border">
+              {mfr.state || "-"}
+            </td>
+
+            <td className="hidden md:table-cell p-2 md:p-3 border">
+              {mfr.phone || "-"}
+            </td>
+
+            <td className="hidden md:table-cell p-2 md:p-3 border text-center whitespace-nowrap">
+              <button
+                onClick={() => startEdit(mfr)}
+                className="text-blue-700 mr-3"
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => setDeleteTarget(mfr)}
+                className="text-red-600"
+              >
+                Delete
+              </button>
+            </td>
+
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )}
+</div>
 
           {/* Pagination */}
           {totalPages > 1 && (
