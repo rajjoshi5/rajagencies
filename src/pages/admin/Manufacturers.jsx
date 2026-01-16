@@ -6,7 +6,6 @@ export default function Manufacturers() {
   const navigate = useNavigate()
 
   const [tab, setTab] = useState("list")
-
   const [manufacturers, setManufacturers] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -39,58 +38,37 @@ export default function Manufacturers() {
     setPage(1)
   }, [search, stateFilter])
 
-  /* ---------------------------
-      Fetch Manufacturers
-  ---------------------------- */
   async function fetchManufacturers() {
     setLoading(true)
-
     const { data, error } = await supabase
       .from("manufacturers")
       .select("*")
       .order("name", { ascending: true })
 
-    if (!error) {
-      setManufacturers(data || [])
-    } else {
-      console.error("Fetch error:", error.message)
-    }
+    if (!error) setManufacturers(data || [])
+    else console.error("Fetch error:", error.message)
 
     setLoading(false)
   }
 
-  /* ---------------------------
-      Add Manufacturer
-  ---------------------------- */
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
   async function addManufacturer() {
-    if (!form.name.trim()) {
-      alert("Manufacturer name is required")
-      return
-    }
+    if (!form.name.trim()) return alert("Manufacturer name is required")
 
-    const { error } = await supabase
-      .from("manufacturers")
-      .insert([form])
-
-    if (error) {
-      alert(error.message)
-    } else {
+    const { error } = await supabase.from("manufacturers").insert([form])
+    if (error) alert(error.message)
+    else {
       setShowModal(false)
       setForm({ name: "", city: "", state: "", phone: "" })
       fetchManufacturers()
     }
   }
 
-  /* ---------------------------
-      Delete Manufacturer
-  ---------------------------- */
   async function deleteManufacturer() {
     if (!deleteTarget) return
-
     setDeleting(true)
 
     const { error } = await supabase
@@ -98,9 +76,8 @@ export default function Manufacturers() {
       .delete()
       .eq("id", deleteTarget.id)
 
-    if (error) {
-      alert(error.message)
-    } else {
+    if (error) alert(error.message)
+    else {
       setDeleteTarget(null)
       fetchManufacturers()
     }
@@ -108,9 +85,6 @@ export default function Manufacturers() {
     setDeleting(false)
   }
 
-  /* ---------------------------
-      Inline Edit
-  ---------------------------- */
   function startEdit(mfr) {
     setEditingId(mfr.id)
     setEditForm({
@@ -127,15 +101,13 @@ export default function Manufacturers() {
 
   async function saveEdit(id) {
     setSaving(true)
-
     const { error } = await supabase
       .from("manufacturers")
       .update(editForm)
       .eq("id", id)
 
-    if (error) {
-      alert(error.message)
-    } else {
+    if (error) alert(error.message)
+    else {
       setEditingId(null)
       fetchManufacturers()
     }
@@ -143,39 +115,24 @@ export default function Manufacturers() {
     setSaving(false)
   }
 
-  function cancelEdit() {
-    setEditingId(null)
-  }
-
-  /* ---------------------------
-      Search & Filters
-  ---------------------------- */
   const filteredManufacturers = manufacturers.filter((mfr) => {
     const text = `${mfr.name} ${mfr.city} ${mfr.state} ${mfr.phone}`.toLowerCase()
-    const matchesSearch = text.includes(search.toLowerCase())
-    const matchesState =
-      !stateFilter || mfr.state === stateFilter
-
-    return matchesSearch && matchesState
+    return (
+      text.includes(search.toLowerCase()) &&
+      (!stateFilter || mfr.state === stateFilter)
+    )
   })
 
   const uniqueStates = [
     ...new Set(manufacturers.map((m) => m.state).filter(Boolean)),
   ]
 
-  /* ---------------------------
-      Pagination
-  ---------------------------- */
   const totalPages = Math.ceil(filteredManufacturers.length / pageSize)
-
   const paginatedManufacturers = filteredManufacturers.slice(
     (page - 1) * pageSize,
     page * pageSize
   )
 
-  /* ---------------------------
-      Analytics
-  ---------------------------- */
   const totalManufacturers = manufacturers.length
 
   const countByState = manufacturers.reduce((acc, m) => {
@@ -184,20 +141,20 @@ export default function Manufacturers() {
     return acc
   }, {})
 
-  const countByCity = manufacturers.reduce((acc, m) => {
-    if (!m.city) return acc
-    acc[m.city] = (acc[m.city] || 0) + 1
-    return acc
-  }, {})
-
-  const topCities = Object.entries(countByCity)
+  const topCities = Object.entries(
+    manufacturers.reduce((acc, m) => {
+      if (!m.city) return acc
+      acc[m.city] = (acc[m.city] || 0) + 1
+      return acc
+    }, {})
+  )
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5)
 
   return (
     <div>
 
-      {/* Back Button */}
+      {/* Back */}
       <button
         onClick={() => navigate("/admin")}
         className="mb-4 text-sm text-blue-700 hover:underline"
@@ -206,7 +163,7 @@ export default function Manufacturers() {
       </button>
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-blue-900">
             Manufacturers
@@ -218,7 +175,7 @@ export default function Manufacturers() {
 
         <button
           onClick={() => setShowModal(true)}
-          className="bg-blue-900 text-white px-5 py-2 rounded-lg hover:bg-blue-800"
+          className="bg-blue-900 text-white px-5 py-2 rounded-lg hover:bg-blue-800 w-full md:w-auto"
         >
           ➕ Add Manufacturer
         </button>
@@ -230,7 +187,7 @@ export default function Manufacturers() {
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-5 py-2 rounded-lg font-medium capitalize transition ${
+            className={`px-5 py-2 rounded-lg font-medium capitalize ${
               tab === t
                 ? "bg-blue-900 text-white"
                 : "bg-white border hover:bg-slate-50"
@@ -241,15 +198,13 @@ export default function Manufacturers() {
         ))}
       </div>
 
-      {/* LIST TAB */}
+      {/* LIST */}
       {tab === "list" && (
         <>
-          {/* Search & Filters */}
+          {/* Search */}
           <div className="mt-6 flex flex-col md:flex-row gap-4">
-
             <input
-              type="text"
-              placeholder="🔍 Search name, city, state, phone..."
+              placeholder="🔍 Search..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="border rounded-lg px-4 py-2 w-full md:w-80"
@@ -262,310 +217,167 @@ export default function Manufacturers() {
             >
               <option value="">All States</option>
               {uniqueStates.map((state) => (
-                <option key={state} value={state}>
-                  {state}
-                </option>
+                <option key={state}>{state}</option>
               ))}
             </select>
-
-            {(search || stateFilter) && (
-              <button
-                onClick={() => {
-                  setSearch("")
-                  setStateFilter("")
-                }}
-                className="text-sm text-blue-700 underline"
-              >
-                Clear Filters
-              </button>
-            )}
-
           </div>
 
           {/* Table */}
-          <div className="mt-6 bg-white rounded-xl shadow overflow-x-auto">
-            {loading ? (
-              <p className="p-6 text-slate-500">Loading manufacturers...</p>
-            ) : paginatedManufacturers.length === 0 ? (
-              <p className="p-6 text-slate-500">
-                No matching manufacturers found.
-              </p>
-            ) : (
-              <table className="w-full border">
-                <thead className="bg-slate-100 text-sm">
-                  <tr>
-                    <th className="p-3 border">Name</th>
-                    <th className="p-3 border">City</th>
-                    <th className="p-3 border">State</th>
-                    <th className="p-3 border">Phone</th>
-                    <th className="p-3 border text-center">Actions</th>
-                  </tr>
-                </thead>
-
-                <tbody className="text-sm">
-                  {paginatedManufacturers.map((mfr) => (
-                    <tr key={mfr.id} className="hover:bg-slate-50">
-
-                      <td className="p-3 border font-medium">
-                        {editingId === mfr.id ? (
-                          <input
-                            name="name"
-                            value={editForm.name}
-                            onChange={handleEditChange}
-                            className="w-full border rounded px-2 py-1 text-sm"
-                          />
-                        ) : (
-                          mfr.name
-                        )}
-                      </td>
-
-                      <td className="p-3 border">
-                        {editingId === mfr.id ? (
-                          <input
-                            name="city"
-                            value={editForm.city}
-                            onChange={handleEditChange}
-                            className="w-full border rounded px-2 py-1 text-sm"
-                          />
-                        ) : (
-                          mfr.city || "-"
-                        )}
-                      </td>
-
-                      <td className="p-3 border">
-                        {editingId === mfr.id ? (
-                          <input
-                            name="state"
-                            value={editForm.state}
-                            onChange={handleEditChange}
-                            className="w-full border rounded px-2 py-1 text-sm"
-                          />
-                        ) : (
-                          mfr.state || "-"
-                        )}
-                      </td>
-
-                      <td className="p-3 border">
-                        {editingId === mfr.id ? (
-                          <input
-                            name="phone"
-                            value={editForm.phone}
-                            onChange={handleEditChange}
-                            className="w-full border rounded px-2 py-1 text-sm"
-                          />
-                        ) : (
-                          mfr.phone || "-"
-                        )}
-                      </td>
-
-                      <td className="p-3 border text-center">
-                        {editingId === mfr.id ? (
-                          <>
-                            <button
-                              onClick={() => saveEdit(mfr.id)}
-                              disabled={saving}
-                              className="text-green-700 hover:underline text-sm mr-3"
-                            >
-                              {saving ? "Saving..." : "Save"}
-                            </button>
-
-                            <button
-                              onClick={cancelEdit}
-                              className="text-slate-600 hover:underline text-sm"
-                            >
-                              Cancel
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <button
-                              onClick={() => startEdit(mfr)}
-                              className="text-blue-700 hover:underline text-sm mr-3"
-                            >
-                              Edit
-                            </button>
-
-                            <button
-                              onClick={() => setDeleteTarget(mfr)}
-                              className="text-red-600 hover:underline text-sm"
-                            >
-                              Delete
-                            </button>
-                          </>
-                        )}
-                      </td>
-
-                    </tr>
+          <div className="mt-6 bg-white rounded-xl shadow overflow-x-auto -mx-4 md:mx-0">
+            <table className="w-full border min-w-[600px]">
+              <thead className="bg-slate-100 text-xs md:text-sm">
+                <tr>
+                  {["Name", "City", "State", "Phone", "Actions"].map((h) => (
+                    <th key={h} className="p-2 md:p-3 border">
+                      {h}
+                    </th>
                   ))}
-                </tbody>
-              </table>
-            )}
+                </tr>
+              </thead>
+
+              <tbody className="text-xs md:text-sm">
+                {paginatedManufacturers.map((mfr) => (
+                  <tr key={mfr.id} className="hover:bg-slate-50">
+                    {["name", "city", "state", "phone"].map((field) => (
+                      <td
+                        key={field}
+                        className="p-2 md:p-3 border"
+                      >
+                        {editingId === mfr.id ? (
+                          <input
+                            name={field}
+                            value={editForm[field]}
+                            onChange={handleEditChange}
+                            className="w-full border rounded px-1 py-1"
+                          />
+                        ) : (
+                          mfr[field] || "-"
+                        )}
+                      </td>
+                    ))}
+
+                    <td className="p-2 md:p-3 border text-center whitespace-nowrap">
+                      {editingId === mfr.id ? (
+                        <>
+                          <button
+                            onClick={() => saveEdit(mfr.id)}
+                            className="text-green-700 mr-2"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={() => setEditingId(null)}
+                            className="text-slate-500"
+                          >
+                            Cancel
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => startEdit(mfr)}
+                            className="text-blue-700 mr-2"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => setDeleteTarget(mfr)}
+                            className="text-red-600"
+                          >
+                            Delete
+                          </button>
+                        </>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4 mt-6">
-
-              <p className="text-sm text-slate-600">
-                Page {page} of {totalPages}
-              </p>
-
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setPage((p) => Math.max(p - 1, 1))}
-                  disabled={page === 1}
-                  className="px-3 py-1 border rounded disabled:opacity-40"
-                >
-                  Prev
-                </button>
-
-                {Array.from({ length: totalPages }).map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setPage(i + 1)}
-                    className={`px-3 py-1 rounded border text-sm ${
-                      page === i + 1
-                        ? "bg-blue-900 text-white"
-                        : "hover:bg-slate-100"
-                    }`}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
-
-                <button
-                  onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
-                  disabled={page === totalPages}
-                  className="px-3 py-1 border rounded disabled:opacity-40"
-                >
-                  Next
-                </button>
-              </div>
-
-              <select
-                value={pageSize}
-                onChange={(e) => {
-                  setPageSize(Number(e.target.value))
-                  setPage(1)
-                }}
-                className="border rounded px-3 py-1 text-sm"
+            <div className="flex justify-between items-center mt-4 text-sm">
+              <button
+                disabled={page === 1}
+                onClick={() => setPage(page - 1)}
               >
-                <option value={5}>5 / page</option>
-                <option value={10}>10 / page</option>
-                <option value={20}>20 / page</option>
-                <option value={50}>50 / page</option>
-              </select>
+                Prev
+              </button>
 
+              <span>
+                Page {page} / {totalPages}
+              </span>
+
+              <button
+                disabled={page === totalPages}
+                onClick={() => setPage(page + 1)}
+              >
+                Next
+              </button>
             </div>
           )}
         </>
       )}
 
-      {/* ANALYTICS TAB */}
+      {/* ANALYTICS */}
       {tab === "analytics" && (
         <div className="mt-8 space-y-6">
 
-          {/* KPI */}
           <div className="bg-white rounded-xl shadow p-6">
-            <p className="text-slate-500 text-sm">Total Manufacturers</p>
+            <p className="text-slate-500">Total Manufacturers</p>
             <p className="text-4xl font-bold text-blue-900">
               {totalManufacturers}
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
-
-            {/* Count by State */}
             <div className="bg-white rounded-xl shadow p-6">
-              <h3 className="font-semibold mb-4">
-                Manufacturers by State
-              </h3>
-
-              <div className="space-y-2">
-                {Object.entries(countByState).map(([state, count]) => (
-                  <div
-                    key={state}
-                    className="flex justify-between border-b pb-1 text-sm"
-                  >
-                    <span>{state}</span>
-                    <span className="font-medium">{count}</span>
-                  </div>
-                ))}
-              </div>
+              <h3 className="font-semibold mb-4">By State</h3>
+              {Object.entries(countByState).map(([state, count]) => (
+                <div key={state} className="flex justify-between text-sm">
+                  <span>{state}</span>
+                  <span>{count}</span>
+                </div>
+              ))}
             </div>
 
-            {/* Top Cities */}
             <div className="bg-white rounded-xl shadow p-6">
-              <h3 className="font-semibold mb-4">
-                Top Cities
-              </h3>
-
-              <div className="space-y-2">
-                {topCities.map(([city, count]) => (
-                  <div
-                    key={city}
-                    className="flex justify-between border-b pb-1 text-sm"
-                  >
-                    <span>{city}</span>
-                    <span className="font-medium">{count}</span>
-                  </div>
-                ))}
-              </div>
+              <h3 className="font-semibold mb-4">Top Cities</h3>
+              {topCities.map(([city, count]) => (
+                <div key={city} className="flex justify-between text-sm">
+                  <span>{city}</span>
+                  <span>{count}</span>
+                </div>
+              ))}
             </div>
-
           </div>
+
         </div>
       )}
 
-      {/* Add Manufacturer Modal */}
+      {/* Add Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl w-full max-w-md p-6">
-            <h2 className="text-xl font-bold mb-4">
-              Add Manufacturer
-            </h2>
+            <h2 className="font-bold mb-4">Add Manufacturer</h2>
 
-            <div className="space-y-3">
+            {["name", "city", "state", "phone"].map((f) => (
               <input
-                name="name"
-                placeholder="Manufacturer Name *"
-                value={form.name}
+                key={f}
+                name={f}
+                placeholder={f}
+                value={form[f]}
                 onChange={handleChange}
-                className="w-full border rounded-lg px-3 py-2"
+                className="w-full border rounded-lg px-3 py-2 mb-3"
               />
-              <input
-                name="city"
-                placeholder="City"
-                value={form.city}
-                onChange={handleChange}
-                className="w-full border rounded-lg px-3 py-2"
-              />
-              <input
-                name="state"
-                placeholder="State"
-                value={form.state}
-                onChange={handleChange}
-                className="w-full border rounded-lg px-3 py-2"
-              />
-              <input
-                name="phone"
-                placeholder="Phone"
-                value={form.phone}
-                onChange={handleChange}
-                className="w-full border rounded-lg px-3 py-2"
-              />
-            </div>
+            ))}
 
-            <div className="flex justify-end gap-3 mt-6">
-              <button
-                onClick={() => setShowModal(false)}
-                className="px-4 py-2 rounded-lg border"
-              >
-                Cancel
-              </button>
+            <div className="flex justify-end gap-3">
+              <button onClick={() => setShowModal(false)}>Cancel</button>
               <button
                 onClick={addManufacturer}
-                className="px-4 py-2 rounded-lg bg-blue-900 text-white"
+                className="bg-blue-900 text-white px-4 py-2 rounded-lg"
               >
                 Save
               </button>
@@ -574,37 +386,21 @@ export default function Manufacturers() {
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete Modal */}
       {deleteTarget && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl w-full max-w-md p-6">
-            <h2 className="text-lg font-bold mb-2 text-red-600">
-              Delete Manufacturer
-            </h2>
-
-            <p className="text-slate-600">
-              Are you sure you want to delete{" "}
-              <span className="font-semibold">
-                {deleteTarget.name}
-              </span>
-              ?
+          <div className="bg-white rounded-xl p-6 max-w-md">
+            <p>
+              Delete <b>{deleteTarget.name}</b>?
             </p>
 
-            <div className="flex justify-end gap-3 mt-6">
-              <button
-                onClick={() => setDeleteTarget(null)}
-                disabled={deleting}
-                className="px-4 py-2 rounded-lg border"
-              >
-                Cancel
-              </button>
-
+            <div className="flex justify-end gap-3 mt-4">
+              <button onClick={() => setDeleteTarget(null)}>Cancel</button>
               <button
                 onClick={deleteManufacturer}
-                disabled={deleting}
-                className="px-4 py-2 rounded-lg bg-red-600 text-white"
+                className="bg-red-600 text-white px-4 py-2 rounded-lg"
               >
-                {deleting ? "Deleting..." : "Delete"}
+                Delete
               </button>
             </div>
           </div>
