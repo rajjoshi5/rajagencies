@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+/* Typography polish */
+h1, h2, h3 {
+  letter-spacing: -0.02em;
+}
+
+p {
+  line-height: 1.65;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+section {
+  scroll-margin-top: 90px;
+}
