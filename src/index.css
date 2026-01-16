@@ -16,3 +16,6 @@ html {
 section {
   scroll-margin-top: 90px;
 }
+html, body {
+  overflow-x: hidden;
+}

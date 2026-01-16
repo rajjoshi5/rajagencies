@@ -21,7 +21,7 @@ export default function Manufacturers() {
   const [stateFilter, setStateFilter] = useState("")
 
   const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState(10)
+  const [pageSize] = useState(10)
 
   const [form, setForm] = useState({
     name: "",
@@ -38,6 +38,7 @@ export default function Manufacturers() {
     setPage(1)
   }, [search, stateFilter])
 
+  /* ---------------- Fetch ---------------- */
   async function fetchManufacturers() {
     setLoading(true)
     const { data, error } = await supabase
@@ -51,6 +52,7 @@ export default function Manufacturers() {
     setLoading(false)
   }
 
+  /* ---------------- Add ---------------- */
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
@@ -67,6 +69,7 @@ export default function Manufacturers() {
     }
   }
 
+  /* ---------------- Delete ---------------- */
   async function deleteManufacturer() {
     if (!deleteTarget) return
     setDeleting(true)
@@ -85,6 +88,7 @@ export default function Manufacturers() {
     setDeleting(false)
   }
 
+  /* ---------------- Edit ---------------- */
   function startEdit(mfr) {
     setEditingId(mfr.id)
     setEditForm({
@@ -115,6 +119,7 @@ export default function Manufacturers() {
     setSaving(false)
   }
 
+  /* ---------------- Search & Filter ---------------- */
   const filteredManufacturers = manufacturers.filter((mfr) => {
     const text = `${mfr.name} ${mfr.city} ${mfr.state} ${mfr.phone}`.toLowerCase()
     return (
@@ -127,12 +132,15 @@ export default function Manufacturers() {
     ...new Set(manufacturers.map((m) => m.state).filter(Boolean)),
   ]
 
+  /* ---------------- Pagination ---------------- */
   const totalPages = Math.ceil(filteredManufacturers.length / pageSize)
+
   const paginatedManufacturers = filteredManufacturers.slice(
     (page - 1) * pageSize,
     page * pageSize
   )
 
+  /* ---------------- Analytics ---------------- */
   const totalManufacturers = manufacturers.length
 
   const countByState = manufacturers.reduce((acc, m) => {
@@ -152,7 +160,7 @@ export default function Manufacturers() {
     .slice(0, 5)
 
   return (
-    <div>
+    <div className="max-w-full overflow-x-hidden">
 
       {/* Back */}
       <button
@@ -223,76 +231,77 @@ export default function Manufacturers() {
           </div>
 
           {/* Table */}
-          <div className="mt-6 bg-white rounded-xl shadow overflow-x-auto -mx-4 md:mx-0">
-            <table className="w-full border min-w-[600px]">
-              <thead className="bg-slate-100 text-xs md:text-sm">
-                <tr>
-                  {["Name", "City", "State", "Phone", "Actions"].map((h) => (
-                    <th key={h} className="p-2 md:p-3 border">
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
+          <div className="mt-6 bg-white rounded-xl shadow overflow-x-auto">
+            {loading ? (
+              <p className="p-6 text-slate-500">Loading...</p>
+            ) : (
+              <table className="w-full border min-w-[500px]">
+                <thead className="bg-slate-100 text-xs md:text-sm">
+                  <tr>
+                    {["Name", "City", "State", "Phone", "Actions"].map((h) => (
+                      <th key={h} className="p-2 md:p-3 border">
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
 
-              <tbody className="text-xs md:text-sm">
-                {paginatedManufacturers.map((mfr) => (
-                  <tr key={mfr.id} className="hover:bg-slate-50">
-                    {["name", "city", "state", "phone"].map((field) => (
-                      <td
-                        key={field}
-                        className="p-2 md:p-3 border"
-                      >
+                <tbody className="text-xs md:text-sm">
+                  {paginatedManufacturers.map((mfr) => (
+                    <tr key={mfr.id} className="hover:bg-slate-50">
+                      {["name", "city", "state", "phone"].map((field) => (
+                        <td key={field} className="p-2 md:p-3 border">
+                          {editingId === mfr.id ? (
+                            <input
+                              name={field}
+                              value={editForm[field]}
+                              onChange={handleEditChange}
+                              className="w-full border rounded px-1 py-1"
+                            />
+                          ) : (
+                            mfr[field] || "-"
+                          )}
+                        </td>
+                      ))}
+
+                      <td className="p-2 md:p-3 border text-center whitespace-nowrap">
                         {editingId === mfr.id ? (
-                          <input
-                            name={field}
-                            value={editForm[field]}
-                            onChange={handleEditChange}
-                            className="w-full border rounded px-1 py-1"
-                          />
+                          <>
+                            <button
+                              onClick={() => saveEdit(mfr.id)}
+                              className="text-green-700 mr-2"
+                            >
+                              Save
+                            </button>
+                            <button
+                              onClick={() => setEditingId(null)}
+                              className="text-slate-500"
+                            >
+                              Cancel
+                            </button>
+                          </>
                         ) : (
-                          mfr[field] || "-"
+                          <>
+                            <button
+                              onClick={() => startEdit(mfr)}
+                              className="text-blue-700 mr-2"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => setDeleteTarget(mfr)}
+                              className="text-red-600"
+                            >
+                              Delete
+                            </button>
+                          </>
                         )}
                       </td>
-                    ))}
-
-                    <td className="p-2 md:p-3 border text-center whitespace-nowrap">
-                      {editingId === mfr.id ? (
-                        <>
-                          <button
-                            onClick={() => saveEdit(mfr.id)}
-                            className="text-green-700 mr-2"
-                          >
-                            Save
-                          </button>
-                          <button
-                            onClick={() => setEditingId(null)}
-                            className="text-slate-500"
-                          >
-                            Cancel
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <button
-                            onClick={() => startEdit(mfr)}
-                            className="text-blue-700 mr-2"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => setDeleteTarget(mfr)}
-                            className="text-red-600"
-                          >
-                            Delete
-                          </button>
-                        </>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
 
           {/* Pagination */}
