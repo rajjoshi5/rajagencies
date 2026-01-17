@@ -6,19 +6,35 @@ export default function AdminDashboard() {
   const navigate = useNavigate()
   const [manufacturerCount, setManufacturerCount] = useState(0)
   const [retailerCount, setRetailerCount] = useState(0)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     loadCounts()
   }, [])
 
   async function loadCounts() {
-    const { count: mCount } = await supabase
-      .from("manufacturers")
-      .select("*", { count: "exact", head: true })
+    try {
+      setLoading(true)
 
-    // Retailers will be added later
-    setManufacturerCount(mCount || 0)
-    setRetailerCount(0)
+      const { count: mCount } = await supabase
+        .from("manufacturers")
+        .select("*", { count: "exact", head: true })
+
+      const { count: rCount } = await supabase
+        .from("retailers")
+        .select("*", { count: "exact", head: true })
+
+      setManufacturerCount(mCount || 0)
+      setRetailerCount(rCount || 0)
+    } catch (err) {
+      console.error("Count load error:", err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return <div className="p-6 text-slate-500">Loading dashboard...</div>
   }
 
   return (
@@ -48,13 +64,16 @@ export default function AdminDashboard() {
         </div>
 
         {/* Retailers */}
-        <div className="rounded-xl bg-white p-6 shadow border opacity-60">
+        <div
+          onClick={() => navigate("/admin/retailers")}
+          className="cursor-pointer rounded-xl bg-white p-6 shadow hover:shadow-lg transition border hover:border-blue-300"
+        >
           <p className="text-slate-500 text-sm">Retailers</p>
-          <p className="text-4xl font-bold text-slate-400 mt-2">
+          <p className="text-4xl font-bold text-blue-900 mt-2">
             {retailerCount}
           </p>
-          <p className="text-sm text-slate-400 mt-3">
-            Coming soon
+          <p className="text-sm text-blue-700 mt-3">
+            Click to manage →
           </p>
         </div>
 

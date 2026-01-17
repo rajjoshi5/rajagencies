@@ -7,6 +7,7 @@ import Login from "./pages/admin/Login"
 import AdminLayout from "./pages/admin/AdminLayout"
 import AdminDashboard from "./pages/admin/AdminDashboard"
 import Manufacturers from "./pages/admin/Manufacturers"
+import Retailers from "./pages/admin/Retailers"
 
 import { supabase } from "./lib/supabase"
 import "./index.css"
@@ -70,9 +71,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
 
           {/* Modules */}
           <Route path="manufacturers" element={<Manufacturers />} />
-
-          {/* Future */}
-          {/* <Route path="retailers" element={<Retailers />} /> */}
+          <Route path="retailers" element={<Retailers />} />
         </Route>
 
       </Routes>

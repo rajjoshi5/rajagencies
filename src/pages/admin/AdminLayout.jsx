@@ -1,14 +1,13 @@
-import { Outlet, NavLink, useNavigate } from "react-router-dom"
+import { Outlet, NavLink } from "react-router-dom"
 import { useState } from "react"
 import { supabase } from "../../lib/supabase"
 
 export default function AdminLayout() {
-  const navigate = useNavigate()
   const [open, setOpen] = useState(false)
 
   async function logout() {
     await supabase.auth.signOut()
-    navigate("/admin/login")
+    window.location.href = "/"   // ✅ Force redirect to website
   }
 
   return (
@@ -16,7 +15,9 @@ export default function AdminLayout() {
 
       {/* Mobile Top Bar */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-white shadow flex items-center justify-between px-4 py-3">
-        <p className="font-bold text-blue-900">Raj Agencies Admin</p>
+        <p className="font-bold text-blue-900">
+          Raj Agencies Admin
+        </p>
 
         <button
           onClick={() => setOpen(true)}
@@ -51,12 +52,13 @@ export default function AdminLayout() {
         </div>
 
         <nav className="p-4 space-y-2">
+
           <NavLink
             to="/admin"
             end
             onClick={() => setOpen(false)}
             className={({ isActive }) =>
-              `block px-4 py-2 rounded-lg ${
+              `block px-4 py-2 rounded-lg transition ${
                 isActive
                   ? "bg-blue-900 text-white"
                   : "hover:bg-slate-100"
@@ -70,7 +72,7 @@ export default function AdminLayout() {
             to="/admin/manufacturers"
             onClick={() => setOpen(false)}
             className={({ isActive }) =>
-              `block px-4 py-2 rounded-lg ${
+              `block px-4 py-2 rounded-lg transition ${
                 isActive
                   ? "bg-blue-900 text-white"
                   : "hover:bg-slate-100"
@@ -80,21 +82,32 @@ export default function AdminLayout() {
             Manufacturers
           </NavLink>
 
-          <div className="px-4 py-2 text-slate-400">
-            Retailers (Soon)
-          </div>
+          <NavLink
+            to="/admin/retailers"
+            onClick={() => setOpen(false)}
+            className={({ isActive }) =>
+              `block px-4 py-2 rounded-lg transition ${
+                isActive
+                  ? "bg-blue-900 text-white"
+                  : "hover:bg-slate-100"
+              }`
+            }
+          >
+            Retailers
+          </NavLink>
 
           <button
             onClick={logout}
-            className="block w-full text-left px-4 py-2 rounded-lg text-red-600 hover:bg-red-50"
+            className="block w-full text-left px-4 py-2 rounded-lg text-red-600 hover:bg-red-50 mt-4"
           >
             Logout
           </button>
+
         </nav>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-6 pt-20 md:pt-6">
+      <main className="flex-1 p-6 pt-20 md:pt-6 overflow-auto">
         <Outlet />
       </main>
 
